@@ -11,21 +11,45 @@ class Node:
         self.name = name
         self.parent = parent
 
-    def insert(self, value, name, parent):
-        """Insert a node into our tree."""
+    def insert(self, value, name, parent, fringe):
+
+        """
+        9/6/21 1:56 function needs more work currently its behavior
+        overwrites self.left and self.right, furthermore self.parent is not
+        stored properly for all nodes except root.
+        """
         
+        """Insert a node into our tree."""
+        #if parent is equal to self.parent then add the node to the parent.
+        #Else add node into a stack to be checked later.
+
+        if parent is self.parent:
+            if self.left is None:
+                self.left = Node(value, name, parent)
+            elif self.right is None:
+                self.right = Node(value, name, parent)
+        else:
+            #Create a stack and fill it with the parentless nodes
+            newNode = Node(value, name, parent)
+            fringe.append(newNode)
+
+        return fringe
+
+        # Traverse the tree if the self.name is equal to the parent name of our
+        #fringe nodes then insert that node as a child
+
         if self.value:
             if value < self.value:
                 if self.left is None:
-                    self.left = Node(value, name, parent)
+                    self.left = Node(value, name, parent, fringe)
                 else: 
-                    self.left.insert(value, name, parent)
+                    self.left.insert(value, name, parent, fringe)
 
             elif value > self.value:
                 if self.right is None:
-                    self.right = Node(value, name, parent)
+                    self.right = Node(value, name, parent, fringe)
                 else:
-                    self.right.insert(value, name, parent)
+                    self.right.insert(value, name, parent, fringe)
                     
         else:
             self.value = value
@@ -39,7 +63,11 @@ class Node:
         if self.right:
             self.right.print_tree()
 
-    def inorderTraversal(self, root):
+    def print_node(self):
+        """Print a single Nodes name value and parent."""
+        print(f"{self.parent} -> {self.name} {self.value}")
+
+    def inorderTraversal(self, root, fringe):
         """ Left -> Root -> Right"""
         res = []
         if root:
@@ -53,33 +81,36 @@ class Node:
 
         return res
 
-def readintotree(fileName):
-    """Read from a file and insert into a tree."""
+def read_into_stack(fileName):
+    """Read from a file and insert entries into the stack as node objects."""
     with open(fileName, "r") as file:
-        first_line = False
+        fringe = []
         root = Node(1, 'A')
         for line in file:
             try:
                 (startingNode, endingNode, cost) = line.split()
             except ValueError:
                 break
-            # paths = [key:val]
 
-            node_int = int(cost)
-            if first_line:
-                root = Node(node_int)
-                # print(node_int)
-                first_line = False
-            else:
-                root.insert(node_int, endingNode, startingNode)
+            cost_int = int(cost)
+            newNode = Node(cost_int, endingNode, startingNode)
+            fringe.append(newNode)
+
+        # while the stack is not empty check the tree for its parent
+            #if its parent is found append the node to the tree and to its parent
+        # while fringe is not empty
         
-    return root
+    return root, fringe
 
         
-       
+fringe = []    
 test = "test.txt"
-root = readintotree(test)
-root.print_tree()
+root, fringe = read_into_stack(test)
+# root.print_tree()
+
+
+for node in fringe:
+    node.print_node()
 
 # print(root.inorderTraversal(root))
 
