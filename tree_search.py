@@ -1,4 +1,16 @@
 
+
+class Entry:
+    """A class  to represent a single entry in our graph. """
+
+    def __init__(self, value=0, name=None, parent=None):
+        """Declare our graph values."""
+        self.value = value
+        self.name = name
+        self.parent = parent
+
+
+
 class Node:
     """Class to represent a node in our search tree."""
     
@@ -7,56 +19,34 @@ class Node:
         self.value = value
         self.left = None
         self.right = None
-        self.children = []
         self.name = name
         self.parent = parent
 
-    def insert(self, value, name, parent, fringe):
+    def insert(self, graph):
 
-        """
-        9/6/21 1:56 function needs more work currently its behavior
-        overwrites self.left and self.right, furthermore self.parent is not
-        stored properly for all nodes except root.
-        """
-        
+
         """Insert a node into our tree."""
-        #if parent is equal to self.parent then add the node to the parent.
-        #Else add node into a stack to be checked later.
-
-        if parent is self.parent:
-            if self.left is None:
-                self.left = Node(value, name, parent)
-            elif self.right is None:
-                self.right = Node(value, name, parent)
-        else:
-            #Create a stack and fill it with the parentless nodes
-            newNode = Node(value, name, parent)
-            fringe.append(newNode)
-
-        return fringe
-
-        # Traverse the tree if the self.name is equal to the parent name of our
-        #fringe nodes then insert that node as a child
-
-        if self.value:
-            if value < self.value:
+        counter = 0
+        for entry in graph:
+            if len(graph) == 0:
+                break
+            if entry.parent is self.name:
                 if self.left is None:
-                    self.left = Node(value, name, parent, fringe)
-                else: 
-                    self.left.insert(value, name, parent, fringe)
+                    newNode = Node(entry.value, entry.name)
+                    self.left = newNode
+                    graph.pop(counter)
+                    self.left.insert(graph)
 
-            elif value > self.value:
-                if self.right is None:
-                    self.right = Node(value, name, parent, fringe)
-                else:
-                    self.right.insert(value, name, parent, fringe)
-                    
-        else:
-            self.value = value
+                elif self.right is None:
+                    newNode = Node(entry.value, entry.name)
+                    self.right = newNode
+                    graph.pop(counter)
+                    self.right.insert(graph)
+            counter+=1
 
     def print_tree(self):
         """Print the values in our node."""
-        print(f"{self.parent}->{self.name} {self.value}")
+        print(f"{self.name} {self.value}")
         if self.left:
             self.left.print_tree()
         # print(self.value)
@@ -67,24 +57,21 @@ class Node:
         """Print a single Nodes name value and parent."""
         print(f"{self.parent} -> {self.name} {self.value}")
 
-    def inorderTraversal(self, root, fringe):
+    def inorderTraversal(self, root):
         """ Left -> Root -> Right"""
         res = []
         if root:
-            # print(f"before recursive {root.value}")
             res = self.inorderTraversal(root.left)
-            res.append(root.value)
-            # print(root.value)
+            res.append(root.name)
+            # print(root.name)
             res = res + self.inorderTraversal(root.right)
-
-        print(f"res = {res}")
 
         return res
 
 def read_into_stack(fileName):
     """Read from a file and insert entries into the stack as node objects."""
     with open(fileName, "r") as file:
-        fringe = []
+        graph = []
         root = Node(1, 'A')
         for line in file:
             try:
@@ -93,25 +80,43 @@ def read_into_stack(fileName):
                 break
 
             cost_int = int(cost)
-            newNode = Node(cost_int, endingNode, startingNode)
-            fringe.append(newNode)
+            newEntry = Entry(cost_int, endingNode, startingNode)
+            graph.append(newEntry)
 
-        # while the stack is not empty check the tree for its parent
-            #if its parent is found append the node to the tree and to its parent
-        # while fringe is not empty
-        
-    return root, fringe
+    """ Remove all nodes not connected to our main tree so as to 
+    prevent stack overflow or infinite looping and store them in a new
+    graph."""
+    children = []
+    index = 0
+    newGraph = []
+    newGraphIndex = 0
+    for entry in graph:
+        children.append(entry.name)
+    for entry in graph.copy():
+        if entry.parent not in children and entry.parent is not root.name:
+            newGraph.append(graph.pop(index))
+            for num in range(len(graph)):
+                if  graph[num].parent is newGraph[newGraphIndex].name:
+                    newGraph.append(graph.pop(num))
+            newGraphIndex+=1
 
-        
-fringe = []    
+        index+=1
+
+    return root, graph, newGraph
+ 
+graph = [] 
+newGraph = []   
 test = "test.txt"
-root, fringe = read_into_stack(test)
-# root.print_tree()
+root, graph, newGraph = read_into_stack(test)
+root.insert(graph)
+print("graph")
+graphTree=root.inorderTraversal(root)
+print(graphTree)
 
-
-for node in fringe:
-    node.print_node()
-
-# print(root.inorderTraversal(root))
+newRoot = Node(1, newGraph[0].parent)
+newRoot.insert(newGraph)
+print("newGraph")
+newGraphTree = newRoot.inorderTraversal(newRoot)
+print(newGraphTree)
 
 
