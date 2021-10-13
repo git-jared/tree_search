@@ -23,33 +23,48 @@ class Node:
         self.parent = parent
 
     def insert(self, graph):
-
-
         """Insert a node into our tree."""
+
+        #Fills in the left of our tree using recursion.
         counter = 0
         for entry in graph:
             if len(graph) == 0:
                 break
+            print(len(graph))
+            print(entry.name)
             if entry.parent is self.name:
                 if self.left is None:
                     newNode = Node(entry.value, entry.name)
                     self.left = newNode
+                    print(f"{self.name} now has {self.left.name} attached to the left.")
                     graph.pop(counter)
                     self.left.insert(graph)
+                    
+            counter+=1
 
-                elif self.right is None:
+        #Fills in the right of our tree using recursion.
+        counter = 0
+        for entry in graph:
+            if len(graph) == 0:
+                break
+            print(len(graph))
+            print(entry.name)
+            if entry.parent is self.name:
+                if self.right is None:
                     newNode = Node(entry.value, entry.name)
                     self.right = newNode
+                    print(f"{self.name} now has {self.right.name} attached to the right.")
                     graph.pop(counter)
                     self.right.insert(graph)
+         
             counter+=1
 
     def print_tree(self):
         """Print the values in our node."""
-        print(f"{self.name} {self.value}")
+        # print(f"{self.name} {self.value}")
         if self.left:
             self.left.print_tree()
-        # print(self.value)
+        print(f"{self.name}->{self.value}")
         if self.right:
             self.right.print_tree()
 
@@ -108,7 +123,11 @@ graph = []
 newGraph = []   
 test = "test.txt"
 root, graph, newGraph = read_into_stack(test)
+loops = 0
+
 root.insert(graph)
+
+print()
 print("graph")
 graphTree=root.inorderTraversal(root)
 print(graphTree)
@@ -118,5 +137,10 @@ newRoot.insert(newGraph)
 print("newGraph")
 newGraphTree = newRoot.inorderTraversal(newRoot)
 print(newGraphTree)
+print("MYGRAPH")
+for entry in graph:
+    print(f"{entry.parent}->{entry.name}")
+print()
 
+root.print_tree()
 
